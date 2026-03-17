@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { Search, ChevronDown, ChevronUp, ChevronRight, Flame } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { NieuweBoekingWizard } from './NieuweBoekingWizard';
 import { Boeking as BookingType, StatusType } from '../types/booking';
 import { ImpactWizard } from './ImpactWizard';
-import { analyzeImpact } from '../utils/impactAnalyse';
-import { toast } from 'sonner';
+import cowIcon from 'figma:asset/a66fdb0db9cbb3734b5cde6aa0a4baea6ced4f3e.png';
+import { DierHistoriekModal } from './DierHistoriekModal';
 
 interface Boeking {
   id: string;
@@ -30,7 +29,7 @@ interface Dier {
 
 // Mock data voor dieren
 const generateMockDieren = (): Dier[] => {
-  const rassen = ['Holstein Friesian', 'Belgian Blue', 'Jersey', 'Charolais', 'Limousin'];
+  const rastypes = ['Dubbel doel', 'Melk', 'Vlees'];
   const namen = ['BRUNO', 'BELLA', 'CHARLIE', 'DAISY', 'ELVIS', 'FLORA', 'GEORGE', 'HEIDI', 'IVAN', 'JULIA'];
   const categorieën = ['Melkkoe', 'Zoogkoe', 'Jongvee', 'Dekstier', 'Mannelijk Jongvee Melk', 'Vrouwelijk Jongvee Vlees'];
   const handelingen = ['Interne Beweging', 'Sterfte', 'Overgang', 'Geboorte', 'Aankoop', 'Verkoop'];
@@ -40,7 +39,7 @@ const generateMockDieren = (): Dier[] => {
 
   for (let i = 0; i < 32; i++) {
     const naam = namen[i % namen.length];
-    const ras = rassen[Math.floor(Math.random() * rassen.length)];
+    const ras = rastypes[Math.floor(Math.random() * rastypes.length)];
     const categorie = categorieën[Math.floor(Math.random() * categorieën.length)];
     const moederdier = moederdieren[Math.floor(Math.random() * moederdieren.length)];
     
@@ -249,7 +248,7 @@ export function IndividueelVee({ selectedSanitel }: { selectedSanitel?: string |
                   <th className="px-3 py-2 w-[44px]"></th>
                   <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Sanitelnummer</th>
                   <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Naam</th>
-                  <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Ras</th>
+                  <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Rastype</th>
                   <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Geboortedatum</th>
                   <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Huidige diercategorie</th>
                   <th className="px-3 py-2 text-left text-[14px] leading-5 text-[#4a5565]">Moederdier</th>
@@ -275,8 +274,11 @@ export function IndividueelVee({ selectedSanitel }: { selectedSanitel?: string |
                       <td className="px-3 py-2 text-[14px] leading-5 text-[#4a5565] font-mono">
                         {dier.sanitelnummer}
                       </td>
-                      <td className="px-3 py-2 text-[14px] leading-5 text-[#101828]">
-                        {dier.naam}
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <img src={cowIcon} alt="Dier" className="w-4 h-4" />
+                          <span className="text-[14px] leading-5 text-[#101828]">{dier.naam}</span>
+                        </div>
                       </td>
                       <td className="px-3 py-2 text-[14px] leading-5 text-[#4a5565]">
                         {dier.ras}

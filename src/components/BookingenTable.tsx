@@ -71,7 +71,7 @@ export function BookingenTable({ bookingen, onNavigateToAnimal, onNavigateToFact
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-4 py-3 text-left border-b border-gray-200 font-medium text-[#101828]">Datum</th>
-                <th className="px-4 py-3 text-left border-b border-gray-200 font-medium text-[#101828]">SANITEL</th>
+                <th className="px-4 py-3 text-left border-b border-gray-200 font-medium text-[#101828]">Sanitelnummer</th>
                 <th className="px-4 py-3 text-left border-b border-gray-200 font-medium text-[#101828]">Naam</th>
                 <th className="px-4 py-3 text-left border-b border-gray-200 font-medium text-[#101828]">Handeling</th>
                 <th className="px-4 py-3 text-left border-b border-gray-200 font-medium text-[#101828]">Gewicht (kg)</th>
@@ -92,6 +92,9 @@ export function BookingenTable({ bookingen, onNavigateToAnimal, onNavigateToFact
                     {boeking.datum}
                   </td>
                   <td className="px-4 py-3 border-b border-gray-100">
+                    <span className="font-mono text-[#101828]">{boeking.sanitel}</span>
+                  </td>
+                  <td className="px-4 py-3 border-b border-gray-100">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -101,11 +104,8 @@ export function BookingenTable({ bookingen, onNavigateToAnimal, onNavigateToFact
                       title="Bekijk dierhistoriek"
                     >
                       <img src={cowIcon} alt="Dier" className="w-4 h-4" />
-                      <span className="font-mono text-[#101828]">{boeking.sanitel}</span>
+                      <span className="text-[#101828]">{boeking.naam}</span>
                     </button>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-100 text-[#101828]">
-                    {boeking.naam}
                   </td>
                   <td className="px-4 py-3 border-b border-gray-100 text-[#101828]">
                     {boeking.handeling}
