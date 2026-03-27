@@ -3,6 +3,7 @@ import { X, Plus } from 'lucide-react';
 import { Boeking, StatusType, HandelingType } from '../types/booking';
 import { toast } from 'sonner@2.0.3';
 import calculatorIcon from 'figma:asset/3264406a1015d1ce0fc45be44eb4da5a0867fd47.png';
+import cowIcon from 'figma:asset/a66fdb0db9cbb3734b5cde6aa0a4baea6ced4f3e.png';
 
 interface NieuweBoekingWizardProps {
   allBookingen?: Boeking[];
@@ -149,6 +150,28 @@ export function NieuweBoekingWizard({
     }
   };
 
+  // Handle naam selection for Interne beweging
+  const handleNaamSelectieIntern = (selectedNaam: string) => {
+    const selectedDier = beschikbareDieren.find(d => d.naam === selectedNaam);
+    if (selectedDier) {
+      setNaam(selectedNaam);
+      setSanitel(selectedDier.sanitelnummer);
+      setGeboortedatum(selectedDier.geboortedatum);
+      setLeeftijd(calculateAgeInMonths(selectedDier.geboortedatum));
+      setCategorie(selectedDier.categorie);
+    }
+  };
+
+  // Handle moeder selection for Geboorte
+  const handleMoederSelectie = (selectedNaam: string) => {
+    const selectedDier = beschikbareDieren.find(d => d.naam === selectedNaam);
+    if (selectedDier) {
+      setNaamMoeder(selectedNaam);
+      setSanitelMoeder(selectedDier.sanitelnummer);
+      setCategorieMoeder(selectedDier.categorie);
+    }
+  };
+
   const canSave = () => {
     if (!handeling) return false;
     
@@ -156,15 +179,15 @@ export function NieuweBoekingWizard({
       case 'Aankoop':
         return !!(datum && sanitel && naam && geboortedatum && gewicht && waarde && btwPercentage && categorie && rasType);
       case 'Geboorte':
-        return !!(datum && sanitelKalf && naamKalf && geboortedatum && gewicht && waarde && btwPercentage && sanitelMoeder && categorieKalf && rasKalfType);
+        return !!(datum && sanitelKalf && naamKalf && geboortedatum && gewicht && waarde && btwPercentage && naamMoeder && categorieKalf && rasKalfType);
       case 'Verkoop':
-        return !!(datum && sanitel && afnemer && levendGewicht && waarde && btwPercentage && categorie && verkoopswijze);
+        return !!(datum && naam && afnemer && levendGewicht && waarde && btwPercentage && categorie && verkoopswijze);
       case 'Interne beweging':
-        return !!(datum && sanitel && gewicht && waarde && bedrijfstakNaar);
+        return !!(datum && naam && gewicht && waarde && bedrijfstakNaar);
       case 'Overgang':
         return !!(datum && naam && nieuweCategorie);
       case 'Sterfte':
-        return !!(datum && sanitel && naam && geboortedatum && leeftijd && categorie);
+        return !!(datum && naam && geboortedatum && leeftijd && categorie);
       default:
         return false;
     }
@@ -277,6 +300,7 @@ export function NieuweBoekingWizard({
                   value={datum}
                   onChange={(e) => setDatum(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                  disabled={handeling === 'Geboorte'}
                 />
               </div>
 
@@ -426,9 +450,9 @@ export function NieuweBoekingWizard({
                     <input
                       type="text"
                       value={sanitelKalf}
-                      onChange={(e) => setSanitelKalf(e.target.value)}
+                      disabled
                       placeholder="Bijv. BE123456789"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -440,17 +464,6 @@ export function NieuweBoekingWizard({
                       value={naamKalf}
                       onChange={(e) => setNaamKalf(e.target.value)}
                       placeholder="Naam van het kalf"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-2 text-gray-700">
-                      Geboortedatum <span className="text-red-600">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={geboortedatum}
-                      onChange={(e) => setGeboortedatum(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
                     />
                   </div>
@@ -530,15 +543,20 @@ export function NieuweBoekingWizard({
                   </div>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
-                      Sanitelnummer moeder <span className="text-red-600">*</span>
+                      Moeder <span className="text-red-600">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={sanitelMoeder}
-                      onChange={(e) => setSanitelMoeder(e.target.value)}
-                      placeholder="Bijv. BE987654321"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none focus:border-blue-500"
-                    />
+                    <select
+                      value={naamMoeder}
+                      onChange={(e) => handleMoederSelectie(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                    >
+                      <option value="">-- Selecteer moederdier --</option>
+                      {beschikbareDieren.map(dier => (
+                        <option key={dier.sanitelnummer} value={dier.naam}>
+                          🐄 {dier.naam} ({dier.categorie})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex gap-6">
                     <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -580,29 +598,14 @@ export function NieuweBoekingWizard({
                 <>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
-                      Sanitelnummer <span className="text-red-600">*</span>
-                    </label>
-                    <select
-                      value={sanitel}
-                      onChange={(e) => setSanitel(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none focus:border-blue-500"
-                    >
-                      <option value="">Selecteer een sanitelnummer...</option>
-                      {allSanitelnummers.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-2 text-gray-700">
                       Naam dier <span className="text-red-600">*</span>
                     </label>
                     <input
                       type="text"
                       value={naam}
-                      onChange={(e) => setNaam(e.target.value)}
+                      disabled
                       placeholder="Naam van het dier"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -612,8 +615,8 @@ export function NieuweBoekingWizard({
                     <input
                       type="date"
                       value={geboortedatum}
-                      onChange={(e) => setGeboortedatum(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -804,40 +807,30 @@ export function NieuweBoekingWizard({
                 <>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
-                      Sanitelnummer <span className="text-red-600">*</span>
+                      Naam dier <span className="text-red-600">*</span>
                     </label>
                     <select
-                      value={sanitel}
-                      onChange={(e) => setSanitel(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none focus:border-blue-500"
+                      value={naam}
+                      onChange={(e) => handleNaamSelectieIntern(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
                     >
-                      <option value="">Selecteer een sanitelnummer...</option>
-                      {allSanitelnummers.map(s => (
-                        <option key={s} value={s}>{s}</option>
+                      <option value="">-- Selecteer dier --</option>
+                      {beschikbareDieren.map(dier => (
+                        <option key={dier.sanitelnummer} value={dier.naam}>
+                          🐄 {dier.naam} ({dier.categorie})
+                        </option>
                       ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-2 text-gray-700">
-                      Naam dier
-                    </label>
-                    <input
-                      type="text"
-                      value={naam}
-                      onChange={(e) => setNaam(e.target.value)}
-                      placeholder="Naam van het dier"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
-                    />
                   </div>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
                       Geboortedatum
                     </label>
                     <input
-                      type="date"
+                      type="text"
                       value={geboortedatum}
-                      onChange={(e) => setGeboortedatum(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -873,25 +866,21 @@ export function NieuweBoekingWizard({
                     <input
                       type="text"
                       value={leeftijd}
-                      onChange={(e) => setLeeftijd(e.target.value)}
+                      disabled
                       placeholder="0.00"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
                       Diercategorie
                     </label>
-                    <select
+                    <input
+                      type="text"
                       value={categorie}
-                      onChange={(e) => setCategorie(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
-                    >
-                      <option value="">Selecteer een categorie...</option>
-                      {diercategorieën.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
@@ -938,21 +927,10 @@ export function NieuweBoekingWizard({
                       <option value="">-- Selecteer dier --</option>
                       {beschikbareDieren.map(dier => (
                         <option key={dier.sanitelnummer} value={dier.naam}>
-                          {dier.naam} ({dier.categorie})
+                          🐄 {dier.naam} ({dier.categorie})
                         </option>
                       ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-2 text-gray-700">
-                      Sanitelnummer
-                    </label>
-                    <input
-                      type="text"
-                      value={sanitel}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none bg-gray-100 cursor-not-allowed"
-                    />
                   </div>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
@@ -1022,29 +1000,14 @@ export function NieuweBoekingWizard({
                 <>
                   <div>
                     <label className="block text-sm mb-2 text-gray-700">
-                      Sanitelnummer <span className="text-red-600">*</span>
-                    </label>
-                    <select
-                      value={sanitel}
-                      onChange={(e) => setSanitel(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono outline-none focus:border-blue-500"
-                    >
-                      <option value="">Selecteer een sanitelnummer...</option>
-                      {allSanitelnummers.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm mb-2 text-gray-700">
                       Naam dier <span className="text-red-600">*</span>
                     </label>
                     <input
                       type="text"
                       value={naam}
-                      onChange={(e) => setNaam(e.target.value)}
+                      disabled
                       placeholder="Naam van het dier"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -1054,8 +1017,8 @@ export function NieuweBoekingWizard({
                     <input
                       type="date"
                       value={geboortedatum}
-                      onChange={(e) => setGeboortedatum(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-gray-100 cursor-not-allowed"
                     />
                   </div>
                   <div>

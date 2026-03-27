@@ -77,6 +77,7 @@ interface InterneVerkoop extends BaseItem {
   leeftijd: string;
   diercategorie: string;
   bedrijfstakNaar: string;
+  naam: string;
   nota: string;
 }
 
@@ -293,20 +294,26 @@ const generateVerkopen = (): Verkoop[] => {
 
 const generateInterneVerkopen = (): InterneVerkoop[] => {
   const result: InterneVerkoop[] = [];
+  const existingNames: string[] = [];
   
   for (let i = 0; i < 3; i++) {
     const geboortedatum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/03/2022`;
     const gewicht = Math.floor(Math.random() * 200) + 400;
+    const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
+    const datum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`;
+    const naam = generateUniqueDierNaam(sanitel, datum, existingNames);
+    existingNames.push(naam);
     
     result.push({
       id: `iv${i + 1}`,
-      datum: `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`,
+      datum: datum,
       geboortedatum: geboortedatum,
       gewicht: gewicht,
       waarde: String(Math.floor(gewicht * 2.5)),
       leeftijd: calculateAgeInMonths(geboortedatum),
       diercategorie: diercategorieën[Math.floor(Math.random() * diercategorieën.length)],
-      sanitelnummer: `BE${Math.floor(Math.random() * 900000000) + 100000000}`,
+      sanitelnummer: sanitel,
+      naam: naam,
       bedrijfstakNaar: '',
       nota: '',
       status: 'Ingeladen',
@@ -920,8 +927,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <input
                               type="text"
                               value={aankoop.datum}
-                              onChange={(e) => updateAankoop(aankoop.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled
+                              className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                             />
                             {aankoop.isManuallyEdited?.datum && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1121,8 +1128,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={geboorte.datum}
-                            onChange={(e) => updateGeboorte(geboorte.id, 'datum', e.target.value)}
-                            className="w-24 text-xs border rounded px-1 py-1"
+                            disabled
+                            className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1258,12 +1265,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
-                          <input
-                            type="text"
-                            value={geboorte.naamMoeder}
-                            onChange={(e) => updateGeboorte(geboorte.id, 'naamMoeder', e.target.value)}
-                            className="w-24 text-xs border rounded px-1 py-1"
-                          />
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleNavigateToAnimal(geboorte.sanitelnummerMoeder)}
+                              className="hover:opacity-80"
+                              title="Bekijk dierhistoriek"
+                            >
+                              <img src={cowIcon} alt="Dier" className="w-4 h-4" />
+                            </button>
+                            <input
+                              type="text"
+                              value={geboorte.naamMoeder}
+                              disabled
+                              className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
+                            />
+                          </div>
                         </td>
                         <td className="px-2 py-2 border-r">
                           <input
@@ -1454,7 +1470,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Datum*</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Sanitelnr</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Naam*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Diercategorie</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Levend gew. (kg)*</th>
@@ -1477,16 +1492,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={verkoop.datum}
-                            onChange={(e) => updateVerkoop(verkoop.id, 'datum', e.target.value)}
-                            className="w-24 text-xs border rounded px-1 py-1"
-                          />
-                        </td>
-                        <td className="px-2 py-2 border-r">
-                          <input
-                            type="text"
-                            value={verkoop.sanitelnummer}
                             disabled
-                            className="w-32 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed font-mono"
+                            className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1501,8 +1508,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <input
                               type="text"
                               value={verkoop.naam}
-                              onChange={(e) => updateVerkoop(verkoop.id, 'naam', e.target.value)}
-                              className="w-20 text-xs border rounded px-1 py-1"
+                              disabled
+                              className="w-20 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                             />
                             {verkoop.isManuallyEdited?.naam && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1670,7 +1677,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Datum*</th>
-                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Sanitelnr</th>
+                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Naam</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Diercategorie</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Bedrijfstak naar*</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Gewicht (kg)*</th>
@@ -1687,17 +1694,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <input
                               type="text"
                               value={iv.datum}
-                              onChange={(e) => updateInterneVerkoop(iv.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled
+                              className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                             />
                           </td>
                           <td className="px-2 py-2 border-r">
-                            <input
-                              type="text"
-                              value={iv.sanitelnummer}
-                              disabled
-                              className="w-32 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed font-mono"
-                            />
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleNavigateToAnimal(iv.sanitelnummer)}
+                                className="hover:opacity-80"
+                                title="Bekijk dierhistoriek"
+                              >
+                                <img src={cowIcon} alt="Dier" className="w-4 h-4" />
+                              </button>
+                              <span className="text-xs text-[#101828]">{iv.naam}</span>
+                            </div>
                           </td>
                           <td className="px-2 py-2 border-r">
                             <select
@@ -1799,7 +1810,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Datum*</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Sanitelnr</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Naam*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Diercategorie</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Leeftijd (m)</th>
@@ -1814,16 +1824,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={sterfte.datum}
-                            onChange={(e) => updateSterfte(sterfte.id, 'datum', e.target.value)}
-                            className="w-24 text-xs border rounded px-1 py-1"
-                          />
-                        </td>
-                        <td className="px-2 py-2 border-r">
-                          <input
-                            type="text"
-                            value={sterfte.sanitelnummer}
                             disabled
-                            className="w-32 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed font-mono"
+                            className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1838,8 +1840,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <input
                               type="text"
                               value={sterfte.naam}
-                              onChange={(e) => updateSterfte(sterfte.id, 'naam', e.target.value)}
-                              className="w-20 text-xs border rounded px-1 py-1"
+                              disabled
+                              className="w-20 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                             />
                             {sterfte.isManuallyEdited?.naam && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
