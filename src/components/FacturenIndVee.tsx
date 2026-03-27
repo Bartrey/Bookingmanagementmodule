@@ -110,9 +110,7 @@ export function FacturenIndVee({ onOpenWizardForMonth }: FacturenIndVeeProps) {
       <div className="p-8">
         {/* Parameters sectie */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-[#101828]">
-            Selecteer parameters voor inladen diergegevens
-          </h2>
+          <h2 className="text-xl font-semibold mb-4 text-[#101828]">Nieuwe diergegevens inladen</h2>
           
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
             <p className="text-[16px] text-[#364153]">
