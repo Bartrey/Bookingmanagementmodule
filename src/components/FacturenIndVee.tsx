@@ -159,7 +159,7 @@ export function FacturenIndVee({ onOpenWizardForMonth }: FacturenIndVeeProps) {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-[14px] font-semibold text-[#364153]">Maand</th>
+                  <th className="px-4 py-3 text-left text-[14px] font-semibold text-[#364153]">Periode</th>
                   <th className="px-4 py-3 text-left text-[14px] font-semibold text-[#364153]">Afgewerkte boekingen</th>
                   <th className="px-4 py-3 text-left text-[14px] font-semibold text-[#364153]">Ingeladen boekingen</th>
                   <th className="px-4 py-3 text-left text-[14px] font-semibold text-[#364153]">Niet afgewerkte boekingen</th>
