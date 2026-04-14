@@ -236,7 +236,7 @@ export function NieuweBoekingWizard({
         <div className="flex items-center gap-3">
           <Plus className="w-5 h-5 text-white" />
           <div>
-            <h2 className="text-white">Nieuwe boeking toevoegen</h2>
+            <h2 className="text-white">123456 &gt; 2026 &gt; Nieuwe boeking toevoegen</h2>
             <p className="text-sm text-blue-100">
               Voeg een nieuwe dierregistratie toe aan het systeem
             </p>

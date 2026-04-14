@@ -10,6 +10,19 @@ import { NieuweBoekingWizard } from './components/NieuweBoekingWizard';
 import { Boeking } from './types/booking';
 import { generateMockBookingen } from './utils/mockData';
 
+// Menu labels mapping
+const menuLabels: Record<string, string> = {
+  'bedrijfskaartgroepen': 'Bedrijfskaartgroepen',
+  'investeringsplan': 'Investeringsplan',
+  'perceelgroepen': 'Perceelgroepen',
+  'teeltplan': 'Teeltplan',
+  'facturen-groepsvee': 'Facturen groepsvee',
+  'veebew-in-groep': 'Veebew. in groep',
+  'facturen-ind-vee': 'Facturen ind. vee',
+  'individueel-vee': 'Individueel vee',
+  'overzicht-boekingen': 'Veebewegingen individueel',
+};
+
 export default function App() {
   const [activeMenu, setActiveMenu] = useState('individueel-vee');
   const [showBulkWizard, setShowBulkWizard] = useState(false);
@@ -76,7 +89,9 @@ export default function App() {
 
         {/* Breadcrumb - Yellow */}
         <div className="bg-[#ffed4e] h-[41px] border-b border-[#e5d43e] flex items-center justify-between px-6 shrink-0">
-          <p className="text-[16px] leading-6 text-[#364153]">Startscherm</p>
+          <p className="text-[16px] leading-6 text-[#364153]">
+            123456 &gt; 2026 &gt; {menuLabels[activeMenu] || 'Startscherm'}
+          </p>
         </div>
 
         {/* Content */}

@@ -19,7 +19,7 @@ const veeSubmenu = [
   { id: 'veebew-in-groep', label: 'Veebew. in groep' },
   { id: 'facturen-ind-vee', label: 'Facturen ind. vee' },
   { id: 'individueel-vee', label: 'Individueel vee' },
-  { id: 'overzicht-boekingen', label: 'Overzicht boekingen' },
+  { id: 'overzicht-boekingen', label: 'Veebewegingen individueel' },
 ];
 
 export function Sidebar({ activeMenu, onMenuChange }: SidebarProps) {

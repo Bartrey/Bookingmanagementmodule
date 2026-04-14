@@ -422,7 +422,7 @@ function ListItem9() {
 function Button7() {
   return (
     <div className="absolute bg-[#155dfc] h-[40px] left-0 top-0 w-[223px]" data-name="Button">
-      <p className="absolute font-['Arimo:Regular',sans-serif] font-normal leading-[24px] left-[32px] text-[16px] text-nowrap text-white top-[6px] whitespace-pre">Overzicht boekingen</p>
+      <p className="absolute font-['Arimo:Regular',sans-serif] font-normal leading-[24px] left-[32px] text-[16px] text-nowrap text-white top-[6px] whitespace-pre">Veebewegingen individueel</p>
     </div>
   );
 }
@@ -615,7 +615,7 @@ function Sidebar() {
 function Heading1() {
   return (
     <div className="h-[30px] relative shrink-0 w-full" data-name="Heading 2">
-      <p className="absolute font-['Arimo:Regular',sans-serif] font-normal leading-[30px] left-0 text-[#101828] text-[20px] text-nowrap top-[-3px] whitespace-pre">Overzicht boekingen</p>
+      <p className="absolute font-['Arimo:Regular',sans-serif] font-normal leading-[30px] left-0 text-[#101828] text-[20px] text-nowrap top-[-3px] whitespace-pre">Veebewegingen individueel</p>
     </div>
   );
 }

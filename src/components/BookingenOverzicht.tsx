@@ -185,7 +185,7 @@ export function BookingenOverzicht({ onNavigateToAnimal, onNavigateToFacturenInd
       <div className="flex-1 overflow-auto">
         {/* Title section */}
         <div className="border-b border-gray-200 px-6 pt-4 pb-2">
-          <h2 className="text-[20px] leading-[30px] text-[#101828] mb-1">Overzicht boekingen</h2>
+          <h2 className="text-[20px] leading-[30px] text-[#101828] mb-1">123456 &gt; 2026 &gt; Veebewegingen individueel</h2>
           <p className="text-[16px] leading-6 text-[#4a5565]">
             Alle boekingen in chronologische volgorde. Dubbelklik op een rij of klik op het chevron icoon om naar het bijhorende dier te navigeren.
           </p>

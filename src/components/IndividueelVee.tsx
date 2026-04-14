@@ -139,7 +139,7 @@ export function IndividueelVee({ selectedSanitel }: { selectedSanitel?: string |
       <div className="flex-1 overflow-auto">
         {/* Title section */}
         <div className="border-b border-gray-200 px-6 pt-4 pb-2">
-          <h2 className="text-[20px] leading-[30px] text-[#101828] mb-1">Dierregistratie — Overzicht</h2>
+          <h2 className="text-[20px] leading-[30px] text-[#101828] mb-1">123456 &gt; 2026 &gt; Individueel vee</h2>
           <p className="text-[16px] leading-6 text-[#4a5565]">
             Gebruik de zoekfilters om specifieke dieren te vinden. Klik op een dier om de boekinghistoriek te bekijken.
           </p>

@@ -4,8 +4,20 @@
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
 
+function figmaAssetResolver() {
+  return {
+    name: 'figma-asset-resolver',
+    resolveId(id) {
+      if (id.startsWith('figma:asset/')) {
+        const filename = id.replace('figma:asset/', '')
+        return path.resolve(__dirname, 'src/assets', filename)
+      }
+    },
+  }
+}
+
   export default defineConfig({
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), figmaAssetResolver()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -18,8 +30,6 @@
         'next-themes@0.4.6': 'next-themes',
         'lucide-react@0.487.0': 'lucide-react',
         'input-otp@1.4.2': 'input-otp',
-        'figma:asset/a66fdb0db9cbb3734b5cde6aa0a4baea6ced4f3e.png': path.resolve(__dirname, './src/assets/a66fdb0db9cbb3734b5cde6aa0a4baea6ced4f3e.png'),
-        'figma:asset/3264406a1015d1ce0fc45be44eb4da5a0867fd47.png': path.resolve(__dirname, './src/assets/3264406a1015d1ce0fc45be44eb4da5a0867fd47.png'),
         'embla-carousel-react@8.6.0': 'embla-carousel-react',
         'cmdk@1.1.1': 'cmdk',
         'class-variance-authority@0.7.1': 'class-variance-authority',

@@ -864,7 +864,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
         {/* Header */}
         <div className="border-b border-gray-200 px-8 py-4 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-2xl font-bold text-[#101828]">Facturen individueel vee - {maand}</h2>
+            <h2 className="text-2xl font-bold text-[#101828]">123456 &gt; 2026 &gt; Facturen ind. vee &gt; {maand}</h2>
             <p className="text-sm text-gray-600 mt-1">Verwerk alle dierboekingen voor deze maand</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
