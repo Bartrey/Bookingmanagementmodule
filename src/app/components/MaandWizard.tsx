@@ -519,6 +519,19 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
     toast.success(`BTW afgetrokken: €${newValue}`);
   };
 
+  // Handle BTW calculator for Geboortes
+  const handleBTWCalculatorGeboorte = (id: string) => {
+    const geboorte = geboortes.find(g => g.id === id);
+    if (!geboorte || !geboorte.waarde || !geboorte.btwPercentage) {
+      toast.error('Gelieve eerst een waarde en BTW percentage in te geven');
+      return;
+    }
+
+    const newValue = calculateValueExcludingBTW(geboorte.waarde, geboorte.btwPercentage);
+    updateGeboorte(id, 'waarde', newValue);
+    toast.success(`BTW afgetrokken: €${newValue}`);
+  };
+
   // Handle BTW calculator for Verkopen
   const handleBTWCalculatorVerkoop = (id: string) => {
     const verkoop = verkopen.find(v => v.id === id);
@@ -526,7 +539,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
       toast.error('Gelieve eerst een waarde en BTW percentage in te geven');
       return;
     }
-    
+
     const newValue = calculateValueExcludingBTW(verkoop.waarde, verkoop.btwPercentage);
     updateVerkoop(id, 'waarde', newValue);
     toast.success(`BTW afgetrokken: €${newValue}`);
@@ -1110,8 +1123,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Datum*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Sanitel kalf</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Naam kalf*</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Categorie kalf*</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Ras kalf*</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Diercategorie kalf*</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Rastype kalf*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Gewicht (kg)*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Waarde (€)*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">BTW*</th>
@@ -1234,6 +1247,14 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               disabled={geboorte.doodgeboren}
                               className={`w-16 text-xs border rounded px-1 py-1 ${geboorte.doodgeboren ? 'bg-gray-100' : ''} ${!geboorte.waarde && !geboorte.doodgeboren ? 'border-red-300 bg-red-50' : ''}`}
                             />
+                            <button
+                              onClick={() => handleBTWCalculatorGeboorte(geboorte.id)}
+                              className="hover:bg-gray-100 rounded p-0.5"
+                              title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
+                              disabled={geboorte.doodgeboren}
+                            >
+                              <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
+                            </button>
                             {geboorte.isManuallyEdited?.waarde && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                             )}
