@@ -17,7 +17,7 @@ const mainMenuItems = [
 const veeSubmenu = [
   { id: 'facturen-groepsvee', label: 'Facturen groepsvee' },
   { id: 'veebew-in-groep', label: 'Veebew. in groep' },
-  { id: 'facturen-ind-vee', label: 'Facturen ind. vee' },
+  { id: 'facturen-ind-vee', label: 'Facturen veebewegingen - individueel' },
   { id: 'individueel-vee', label: 'Individueel vee' },
   { id: 'overzicht-boekingen', label: 'Veebewegingen individueel' },
 ];

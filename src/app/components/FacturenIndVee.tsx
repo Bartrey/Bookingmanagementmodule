@@ -109,7 +109,7 @@ export function FacturenIndVee({ onOpenWizardForMonth }: FacturenIndVeeProps) {
     <div className="h-full overflow-y-auto bg-white">
       <div className="p-8">
         {/* Title breadcrumb */}
-        <h1 className="text-[20px] leading-[30px] text-[#101828] mb-6">123456 &gt; 2026 &gt; Facturen ind. vee</h1>
+        <h1 className="text-[20px] leading-[30px] text-[#101828] mb-6">123456 &gt; 2026 &gt; Facturen veebewegingen - individueel</h1>
         
         {/* Parameters sectie */}
         <div className="mb-8">

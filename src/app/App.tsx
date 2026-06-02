@@ -18,7 +18,7 @@ const menuLabels: Record<string, string> = {
   'teeltplan': 'Teeltplan',
   'facturen-groepsvee': 'Facturen groepsvee',
   'veebew-in-groep': 'Veebew. in groep',
-  'facturen-ind-vee': 'Facturen ind. vee',
+  'facturen-ind-vee': 'Facturen veebewegingen - individueel',
   'individueel-vee': 'Individueel vee',
   'overzicht-boekingen': 'Veebewegingen individueel',
 };

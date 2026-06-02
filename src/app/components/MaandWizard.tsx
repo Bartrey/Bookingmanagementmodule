@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ChevronRight, Plus, Star, Calculator } from 'lucide-react';
+import { X, ChevronRight, Plus, Star, Calculator, Trash2 } from 'lucide-react';
 import { StatusType, Boeking } from '../types/booking';
 import { ImpactWizard } from './ImpactWizard';
 import { analyzeImpact } from '../utils/impactAnalyse';
@@ -378,7 +378,13 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
   
   const [showDierModal, setShowDierModal] = useState(false);
   const [selectedDierInfo, setSelectedDierInfo] = useState<any>(null);
-  
+
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    show: boolean;
+    id: string;
+    type: 'aankoop' | 'geboorte' | 'overgang' | 'verkoop' | 'interneVerkoop' | 'sterfte';
+  }>({ show: false, id: '', type: 'aankoop' });
+
   const [aankopen, setAankopen] = useState<Aankoop[]>(() => generateAankopen());
   const [geboortes, setGeboortes] = useState<Geboorte[]>(() => generateGeboortes());
   const [overgangen, setOvergangen] = useState<Overgang[]>([]);
@@ -676,19 +682,61 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
   const updateSterfte = (id: string, field: keyof Sterfte, value: any) => {
     const currentSterfte = sterftes.find(s => s.id === id);
     if (!currentSterfte) return;
-    
+
     if (!checkAndUpdate('sterfte', id, field, value, currentSterfte)) return;
-    
+
     setSterftes(sterftes.map(s => {
       if (s.id === id) {
-        return { 
-          ...s, 
+        return {
+          ...s,
           [field]: value,
           isManuallyEdited: { ...s.isManuallyEdited, [field]: true }
         };
       }
       return s;
     }));
+  };
+
+  // Delete handlers - show confirmation first
+  const requestDelete = (id: string, type: 'aankoop' | 'geboorte' | 'overgang' | 'verkoop' | 'interneVerkoop' | 'sterfte') => {
+    setDeleteConfirmation({ show: true, id, type });
+  };
+
+  const confirmDelete = () => {
+    const { id, type } = deleteConfirmation;
+
+    switch (type) {
+      case 'aankoop':
+        setAankopen(aankopen.filter(a => a.id !== id));
+        toast.success('Aankoop verwijderd');
+        break;
+      case 'geboorte':
+        setGeboortes(geboortes.filter(g => g.id !== id));
+        toast.success('Geboorte verwijderd');
+        break;
+      case 'overgang':
+        setOvergangen(overgangen.filter(o => o.id !== id));
+        toast.success('Overgang verwijderd');
+        break;
+      case 'verkoop':
+        setVerkopen(verkopen.filter(v => v.id !== id));
+        toast.success('Verkoop verwijderd');
+        break;
+      case 'interneVerkoop':
+        setInterneVerkopen(interneVerkopen.filter(iv => iv.id !== id));
+        toast.success('Interne verkoop verwijderd');
+        break;
+      case 'sterfte':
+        setSterftes(sterftes.filter(s => s.id !== id));
+        toast.success('Sterfte verwijderd');
+        break;
+    }
+
+    setDeleteConfirmation({ show: false, id: '', type: 'aankoop' });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmation({ show: false, id: '', type: 'aankoop' });
   };
 
   const handleBack = () => {
@@ -877,7 +925,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
         {/* Header */}
         <div className="border-b border-gray-200 px-8 py-4 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-2xl font-bold text-[#101828]">123456 &gt; 2026 &gt; Facturen ind. vee &gt; {maand}</h2>
+            <h2 className="text-2xl font-bold text-[#101828]">123456 &gt; 2026 &gt; Facturen veebewegingen - individueel &gt; {maand}</h2>
             <p className="text-sm text-gray-600 mt-1">Verwerk alle dierboekingen voor deze maand</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -929,7 +977,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Waarde (€)*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">BTW*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nota</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1083,7 +1132,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             placeholder="Vrije tekst..."
                           />
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="px-2 py-2 border-r">
                           <select
                             value={aankoop.status}
                             onChange={(e) => updateStatus(aankoop.id, e.target.value as StatusType, 'aankoop')}
@@ -1092,8 +1141,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
                             <option value="Afgewerkt">Afgewerkt</option>
-                            <option value="Verwijderd">Verwijderd</option>
                           </select>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <button
+                            onClick={() => requestDelete(aankoop.id, 'aankoop')}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                            title="Verwijder boeking"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1132,7 +1189,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Meerling</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Moeder</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nota</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1318,7 +1376,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             placeholder="Vrije tekst..."
                           />
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="px-2 py-2 border-r">
                           <select
                             value={geboorte.status}
                             onChange={(e) => updateStatus(geboorte.id, e.target.value as StatusType, 'geboorte')}
@@ -1327,8 +1385,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
                             <option value="Afgewerkt">Afgewerkt</option>
-                            <option value="Verwijderd">Verwijderd</option>
                           </select>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <button
+                            onClick={() => requestDelete(geboorte.id, 'geboorte')}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                            title="Verwijder boeking"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1365,7 +1431,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nieuwe cat.*</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Leeftijd (m)</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nota</th>
-                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]">Status</th>
+                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Status</th>
+                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1459,7 +1526,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               placeholder="Vrije tekst..."
                             />
                           </td>
-                          <td className="px-2 py-2">
+                          <td className="px-2 py-2 border-r">
                             <select
                               value={overgang.status}
                               onChange={(e) => updateStatus(overgang.id, e.target.value as StatusType, 'overgang')}
@@ -1468,8 +1535,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <option value="Ingeladen">Ingeladen</option>
                               <option value="Niet afgewerkt">Niet afgewerkt</option>
                               <option value="Afgewerkt">Afgewerkt</option>
-                              <option value="Verwijderd">Verwijderd</option>
                             </select>
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <button
+                              onClick={() => requestDelete(overgang.id, 'overgang')}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                              title="Verwijder boeking"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1510,7 +1585,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Afgekeurd?</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Verkoopswijze*</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nota</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1675,7 +1751,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             placeholder="Vrije tekst..."
                           />
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="px-2 py-2 border-r">
                           <select
                             value={verkoop.status}
                             onChange={(e) => updateStatus(verkoop.id, e.target.value as StatusType, 'verkoop')}
@@ -1684,8 +1760,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
                             <option value="Afgewerkt">Afgewerkt</option>
-                            <option value="Verwijderd">Verwijderd</option>
                           </select>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <button
+                            onClick={() => requestDelete(verkoop.id, 'verkoop')}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                            title="Verwijder boeking"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1723,7 +1807,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Waarde (€)</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Leeftijd (m)</th>
                         <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nota</th>
-                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]">Status</th>
+                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Status</th>
+                        <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1810,7 +1895,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               placeholder="Vrije tekst..."
                             />
                           </td>
-                          <td className="px-2 py-2">
+                          <td className="px-2 py-2 border-r">
                             <select
                               value={iv.status}
                               onChange={(e) => updateStatus(iv.id, e.target.value as StatusType, 'interneVerkoop')}
@@ -1819,8 +1904,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <option value="Ingeladen">Ingeladen</option>
                               <option value="Niet afgewerkt">Niet afgewerkt</option>
                               <option value="Afgewerkt">Afgewerkt</option>
-                              <option value="Verwijderd">Verwijderd</option>
                             </select>
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <button
+                              onClick={() => requestDelete(iv.id, 'interneVerkoop')}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                              title="Verwijder boeking"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1853,7 +1946,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Diercategorie</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Leeftijd (m)</th>
                       <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Nota</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153] border-r">Status</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-[#364153]"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1913,7 +2007,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             placeholder="Vrije tekst..."
                           />
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="px-2 py-2 border-r">
                           <select
                             value={sterfte.status}
                             onChange={(e) => updateStatus(sterfte.id, e.target.value as StatusType, 'sterfte')}
@@ -1922,8 +2016,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
                             <option value="Afgewerkt">Afgewerkt</option>
-                            <option value="Verwijderd">Verwijderd</option>
                           </select>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <button
+                            onClick={() => requestDelete(sterfte.id, 'sterfte')}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                            title="Verwijder boeking"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1976,6 +2078,30 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             setSelectedDierInfo(null);
           }}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-[#101828] mb-4">Boeking verwijderen</h3>
+            <p className="text-[#364153] mb-6">Bent u zeker dat u deze boeking wil verwijderen?</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border border-gray-300 rounded text-[#364153] hover:bg-gray-50"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
