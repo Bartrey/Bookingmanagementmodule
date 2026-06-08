@@ -451,6 +451,54 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
   };
 
   const updateStatus = (id: string, newStatus: StatusType, type: string) => {
+    // Check if status is being set to "Afgewerkt" and if there are high impact fields edited
+    if (newStatus === 'Afgewerkt') {
+      let currentItem: any = null;
+
+      if (type === 'aankoop') {
+        currentItem = aankopen.find(a => a.id === id);
+      } else if (type === 'geboorte') {
+        currentItem = geboortes.find(g => g.id === id);
+      } else if (type === 'overgang') {
+        currentItem = overgangen.find(o => o.id === id);
+      } else if (type === 'verkoop') {
+        currentItem = verkopen.find(v => v.id === id);
+      } else if (type === 'interneVerkoop') {
+        currentItem = interneVerkopen.find(iv => iv.id === id);
+      } else if (type === 'sterfte') {
+        currentItem = sterftes.find(s => s.id === id);
+      }
+
+      // Check if any high impact fields were edited
+      if (currentItem && currentItem.isManuallyEdited) {
+        // @ts-ignore
+        const highImpactFieldsForType = highImpactFields[type] || [];
+        const hasEditedHighImpactField = highImpactFieldsForType.some((field: string) =>
+          currentItem.isManuallyEdited[field]
+        );
+
+        if (hasEditedHighImpactField) {
+          // Show impact wizard
+          const originalBoeking = convertToBoeking(currentItem, type.charAt(0).toUpperCase() + type.slice(1));
+          const pendingUpdate = { status: newStatus };
+          const impactResult = analyzeImpact(originalBoeking, pendingUpdate, allBookingen);
+
+          setImpactWizard({
+            show: true,
+            originalBoeking: originalBoeking,
+            pendingUpdate: pendingUpdate,
+            affectedBookingIds: impactResult.affectedBookings,
+            impactReason: 'Status wordt gewijzigd naar Afgewerkt met gewijzigde high impact velden',
+            changedField: 'status',
+            type: type,
+            itemId: id
+          });
+          return; // Don't update status yet, wait for impact wizard completion
+        }
+      }
+    }
+
+    // Update status directly
     if (type === 'aankoop') {
       setAankopen(aankopen.map(a => a.id === id ? { ...a, status: newStatus } : a));
     } else if (type === 'geboorte') {
@@ -466,37 +514,16 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
     }
   };
 
-  // Check for impact before updating
+  // Check for impact before updating - disabled, impact wizard only shows when status is set to Afgewerkt
   const checkAndUpdate = (type: string, id: string, field: string, value: any, currentItem: any) => {
-    // @ts-ignore
-    const isHighImpact = highImpactFields[type]?.includes(field);
-    
-    if (isHighImpact) {
-      const originalBoeking = convertToBoeking(currentItem, type.charAt(0).toUpperCase() + type.slice(1));
-      const pendingUpdate = { [field]: value };
-      const impactResult = analyzeImpact(originalBoeking, pendingUpdate, allBookingen);
-      
-      if (impactResult.hasHighImpact) {
-        setImpactWizard({
-          show: true,
-          originalBoeking: originalBoeking,
-          pendingUpdate: pendingUpdate,
-          affectedBookingIds: impactResult.affectedBookings,
-          impactReason: impactResult.reason || '',
-          changedField: impactResult.changedField,
-          type: type,
-          itemId: id
-        });
-        return false; // Don't update yet
-      }
-    }
-    return true; // Update directly
+    // Always allow direct updates, impact wizard will be shown when status is set to Afgewerkt
+    return true;
   };
 
   const handleImpactWizardComplete = (updatedBookings: Boeking[]) => {
     // Apply the update to the specific item
     const { type, itemId, pendingUpdate } = impactWizard;
-    
+
     if (type === 'aankoop') {
       setAankopen(aankopen.map(a => a.id === itemId ? { ...a, ...pendingUpdate, isManuallyEdited: { ...a.isManuallyEdited, ...Object.keys(pendingUpdate).reduce((acc, key) => ({ ...acc, [key]: true }), {}) } } : a));
     } else if (type === 'geboorte') {
@@ -507,8 +534,10 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
       setVerkopen(verkopen.map(v => v.id === itemId ? { ...v, ...pendingUpdate, isManuallyEdited: { ...v.isManuallyEdited, ...Object.keys(pendingUpdate).reduce((acc, key) => ({ ...acc, [key]: true }), {}) } } : v));
     } else if (type === 'interneVerkoop') {
       setInterneVerkopen(interneVerkopen.map(iv => iv.id === itemId ? { ...iv, ...pendingUpdate, isManuallyEdited: { ...iv.isManuallyEdited, ...Object.keys(pendingUpdate).reduce((acc, key) => ({ ...acc, [key]: true }), {}) } } : iv));
+    } else if (type === 'sterfte') {
+      setSterftes(sterftes.map(s => s.id === itemId ? { ...s, ...pendingUpdate, isManuallyEdited: { ...s.isManuallyEdited, ...Object.keys(pendingUpdate).reduce((acc, key) => ({ ...acc, [key]: true }), {}) } } : s));
     }
-    
+
     setImpactWizard({ ...impactWizard, show: false });
   };
 
@@ -987,10 +1016,11 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <td className="px-2 py-2 border-r">
                           <div className="flex items-center gap-1">
                             <input
-                              type="text"
+                              type="date"
                               value={aankoop.datum}
                               onChange={(e) => updateAankoop(aankoop.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled={aankoop.status === 'Afgewerkt'}
+                              className={`w-24 text-xs border rounded px-1 py-1 ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {aankoop.isManuallyEdited?.datum && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -999,10 +1029,11 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         </td>
                         <td className="px-2 py-2 border-r">
                           <input
-                            type="text"
+                            type="date"
                             value={aankoop.geboortedatum}
                             onChange={(e) => updateAankoop(aankoop.id, 'geboortedatum', e.target.value)}
-                            className="w-24 text-xs border rounded px-1 py-1"
+                            disabled={aankoop.status === 'Afgewerkt'}
+                            className={`w-24 text-xs border rounded px-1 py-1 ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1026,7 +1057,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               type="text"
                               value={aankoop.naam}
                               onChange={(e) => updateAankoop(aankoop.id, 'naam', e.target.value)}
-                              className="w-20 text-xs border rounded px-1 py-1"
+                              disabled={aankoop.status === 'Afgewerkt'}
+                              className={`w-full text-xs border rounded px-1 py-1 ${!aankoop.naam ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {aankoop.isManuallyEdited?.naam && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1042,7 +1074,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 updateAankoop(aankoop.id, 'diercategorie', e.target.value);
                                 setTempValues({...tempValues, [`aankoop-${aankoop.id}-diercategorie`]: undefined});
                               }}
-                              className={`w-full text-xs border rounded px-1 py-1 ${!aankoop.diercategorie ? 'border-red-300 bg-red-50' : ''}`}
+                              disabled={aankoop.status === 'Afgewerkt'}
                             >
                               <option value="">--</option>
                               {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -1057,7 +1089,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <select
                               value={aankoop.rasType}
                               onChange={(e) => updateAankoop(aankoop.id, 'rasType', e.target.value)}
-                              className="w-full text-xs border rounded px-1 py-1"
+                              disabled={aankoop.status === 'Afgewerkt'}
                             >
                               {rasTypes.map(ras => <option key={ras} value={ras}>{ras}</option>)}
                             </select>
@@ -1076,7 +1108,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 updateAankoop(aankoop.id, 'gewicht', parseInt(e.target.value) || 0);
                                 setTempValues({...tempValues, [`aankoop-${aankoop.id}-gewicht`]: undefined});
                               }}
-                              className="w-16 text-xs border rounded px-1 py-1"
+                              disabled={aankoop.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${!aankoop.gewicht ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {aankoop.isManuallyEdited?.gewicht && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1093,11 +1126,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 updateAankoop(aankoop.id, 'waarde', e.target.value);
                                 setTempValues({...tempValues, [`aankoop-${aankoop.id}-waarde`]: undefined});
                               }}
-                              className={`w-16 text-xs border rounded px-1 py-1 ${!aankoop.waarde ? 'border-red-300 bg-red-50' : ''}`}
+                              disabled={aankoop.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${!aankoop.waarde ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             <button
                               onClick={() => handleBTWCalculatorAankoop(aankoop.id)}
-                              className="hover:bg-gray-100 rounded p-0.5"
+                              disabled={aankoop.status === 'Afgewerkt'}
                               title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
                             >
                               <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
@@ -1113,7 +1147,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               type="number"
                               value={aankoop.btwPercentage.replace('%', '')}
                               onChange={(e) => updateAankoop(aankoop.id, 'btwPercentage', e.target.value ? `${e.target.value}%` : '')}
-                              className={`w-16 text-xs border rounded px-1 py-1 ${!aankoop.btwPercentage ? 'border-red-300 bg-red-50' : ''}`}
+                              disabled={aankoop.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${!aankoop.btwPercentage ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                               placeholder="0"
                               min="0"
                               max="100"
@@ -1128,7 +1163,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             type="text"
                             value={aankoop.nota}
                             onChange={(e) => updateAankoop(aankoop.id, 'nota', e.target.value)}
-                            className="w-32 text-xs border rounded px-1 py-1"
+                            disabled={aankoop.status === 'Afgewerkt'}
                             placeholder="Vrije tekst..."
                           />
                         </td>
@@ -1136,7 +1171,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <select
                             value={aankoop.status}
                             onChange={(e) => updateStatus(aankoop.id, e.target.value as StatusType, 'aankoop')}
-                            className={`w-full text-xs border rounded px-1 py-1 ${getStatusColor(aankoop.status)}`}
                           >
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
@@ -1146,7 +1180,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <td className="px-2 py-2 text-center">
                           <button
                             onClick={() => requestDelete(aankoop.id, 'aankoop')}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                            disabled={aankoop.status === 'Afgewerkt'}
                             title="Verwijder boeking"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1199,10 +1233,11 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <td className="px-2 py-2 border-r">
                           <div className="flex items-center gap-1">
                             <input
-                              type="text"
+                              type="date"
                               value={geboorte.datum}
                               onChange={(e) => updateGeboorte(geboorte.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled={geboorte.status === 'Afgewerkt'}
+                              className={`w-24 text-xs border rounded px-1 py-1 ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {geboorte.isManuallyEdited?.datum && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1230,7 +1265,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               type="text"
                               value={geboorte.naamKalf}
                               onChange={(e) => updateGeboorte(geboorte.id, 'naamKalf', e.target.value)}
-                              className={`w-20 text-xs border rounded px-1 py-1 ${!geboorte.naamKalf ? 'border-red-300 bg-red-50' : ''}`}
+                              disabled={geboorte.status === 'Afgewerkt'}
+                              className={`w-full text-xs border rounded px-1 py-1 ${!geboorte.naamKalf ? 'border-red-300 bg-red-50' : ''} ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {geboorte.isManuallyEdited?.naamKalf && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1285,7 +1321,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 updateGeboorte(geboorte.id, 'gewicht', parseInt(e.target.value) || 0);
                                 setTempValues({...tempValues, [`geboorte-${geboorte.id}-gewicht`]: undefined});
                               }}
-                              className="w-16 text-xs border rounded px-1 py-1"
+                              disabled={geboorte.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${!geboorte.gewicht ? 'border-red-300 bg-red-50' : ''} ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {geboorte.isManuallyEdited?.gewicht && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1302,8 +1339,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 updateGeboorte(geboorte.id, 'waarde', e.target.value);
                                 setTempValues({...tempValues, [`geboorte-${geboorte.id}-waarde`]: undefined});
                               }}
-                              disabled={geboorte.doodgeboren}
-                              className={`w-16 text-xs border rounded px-1 py-1 ${geboorte.doodgeboren ? 'bg-gray-100' : ''} ${!geboorte.waarde && !geboorte.doodgeboren ? 'border-red-300 bg-red-50' : ''}`}
+                              disabled={geboorte.doodgeboren || geboorte.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${!geboorte.waarde ? 'border-red-300 bg-red-50' : ''} ${(geboorte.doodgeboren || geboorte.status === 'Afgewerkt') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             <button
                               onClick={() => handleBTWCalculatorGeboorte(geboorte.id)}
@@ -1324,8 +1361,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               type="number"
                               value={geboorte.btwPercentage.replace('%', '')}
                               onChange={(e) => updateGeboorte(geboorte.id, 'btwPercentage', e.target.value ? `${e.target.value}%` : '')}
-                              className={`w-16 text-xs border rounded px-1 py-1 ${!geboorte.btwPercentage ? 'border-red-300 bg-red-50' : ''}`}
-                              placeholder="0"
+                               disabled={geboorte.status === 'Afgewerkt'} className={`w-16 text-xs border rounded px-1 py-1 ${!geboorte.btwPercentage ? 'border-red-300 bg-red-50' : ''}`}
                               min="0"
                               max="100"
                             />
@@ -1338,17 +1374,13 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="checkbox"
                             checked={geboorte.doodgeboren}
-                            onChange={(e) => updateGeboorte(geboorte.id, 'doodgeboren', e.target.checked)}
-                            className="w-4 h-4"
-                          />
+                            onChange={(e) => updateGeboorte(geboorte.id, 'doodgeboren', e.target.checked)} disabled={geboorte.status === 'Afgewerkt'} className={`w-4 h-4 ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                         </td>
                         <td className="px-2 py-2 border-r text-center">
                           <input
                             type="checkbox"
                             checked={geboorte.meerling}
-                            onChange={(e) => updateGeboorte(geboorte.id, 'meerling', e.target.checked)}
-                            className="w-4 h-4"
-                          />
+                            onChange={(e) => updateGeboorte(geboorte.id, 'meerling', e.target.checked)} disabled={geboorte.status === 'Afgewerkt'} className={`w-4 h-4 ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                         </td>
                         <td className="px-2 py-2 border-r">
                           <div className="flex items-center gap-1">
@@ -1371,16 +1403,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={geboorte.nota}
-                            onChange={(e) => updateGeboorte(geboorte.id, 'nota', e.target.value)}
-                            className="w-32 text-xs border rounded px-1 py-1"
-                            placeholder="Vrije tekst..."
-                          />
+                            onChange={(e) => updateGeboorte(geboorte.id, 'nota', e.target.value)} disabled={geboorte.status === 'Afgewerkt'} className={`w-32 text-xs border rounded px-1 py-1 ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                         </td>
                         <td className="px-2 py-2 border-r">
                           <select
                             value={geboorte.status}
                             onChange={(e) => updateStatus(geboorte.id, e.target.value as StatusType, 'geboorte')}
-                            className={`w-full text-xs border rounded px-1 py-1 ${getStatusColor(geboorte.status)}`}
                           >
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
@@ -1390,8 +1418,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <td className="px-2 py-2 text-center">
                           <button
                             onClick={() => requestDelete(geboorte.id, 'geboorte')}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
-                            title="Verwijder boeking"
+                            disabled={geboorte.status === 'Afgewerkt'}
+                            className={`text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1439,11 +1467,10 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       {overgangen.map((overgang) => (
                         <tr key={overgang.id} className="border-b hover:bg-gray-50">
                           <td className="px-2 py-2 border-r">
-                            <input
-                              type="text"
-                              value={overgang.datum}
+                            <input type="date" value={overgang.datum}
                               onChange={(e) => updateOvergang(overgang.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled={overgang.status === 'Afgewerkt'}
+                              className={`w-24 text-xs border rounded px-1 py-1 ${overgang.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                           </td>
                           <td className="px-2 py-2 border-r">
@@ -1460,6 +1487,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <select
                                 value={overgang.naam}
                                 onChange={(e) => updateOvergang(overgang.id, 'naam', e.target.value)}
+                                disabled={overgang.status === 'Afgewerkt'}
                                 className={`w-full text-xs border rounded px-1 py-1 ${!overgang.naam ? 'border-red-300 bg-red-50' : ''}`}
                               >
                                 <option value="">-- Selecteer dier --</option>
@@ -1521,16 +1549,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <input
                               type="text"
                               value={overgang.nota}
-                              onChange={(e) => updateOvergang(overgang.id, 'nota', e.target.value)}
-                              className="w-32 text-xs border rounded px-1 py-1"
-                              placeholder="Vrije tekst..."
-                            />
+                              onChange={(e) => updateOvergang(overgang.id, 'nota', e.target.value)} disabled={overgang.status === 'Afgewerkt'} className={`w-32 text-xs border rounded px-1 py-1 ${overgang.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                           </td>
                           <td className="px-2 py-2 border-r">
                             <select
                               value={overgang.status}
                               onChange={(e) => updateStatus(overgang.id, e.target.value as StatusType, 'overgang')}
-                              className={`w-full text-xs border rounded px-1 py-1 ${getStatusColor(overgang.status)}`}
                             >
                               <option value="Ingeladen">Ingeladen</option>
                               <option value="Niet afgewerkt">Niet afgewerkt</option>
@@ -1540,8 +1564,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <td className="px-2 py-2 text-center">
                             <button
                               onClick={() => requestDelete(overgang.id, 'overgang')}
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
-                              title="Verwijder boeking"
+                              disabled={overgang.status === 'Afgewerkt'}
+                              className={`text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed ${overgang.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1594,11 +1618,10 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       <tr key={verkoop.id} className="border-b hover:bg-gray-50">
                         <td className="px-2 py-2 border-r">
                           <div className="flex items-center gap-1">
-                            <input
-                              type="text"
-                              value={verkoop.datum}
+                            <input type="date" value={verkoop.datum}
                               onChange={(e) => updateVerkoop(verkoop.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled={verkoop.status === 'Afgewerkt'}
+                              className={`w-24 text-xs border rounded px-1 py-1 ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {verkoop.isManuallyEdited?.datum && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1629,7 +1652,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <select
                             value={verkoop.diercategorie}
                             onChange={(e) => updateVerkoop(verkoop.id, 'diercategorie', e.target.value)}
-                            className="w-full text-xs border rounded px-1 py-1"
+                            disabled={verkoop.status === 'Afgewerkt'}
+                            className={`w-full text-xs border rounded px-1 py-1 ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           >
                             {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                           </select>
@@ -1644,7 +1668,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 updateVerkoop(verkoop.id, 'levendGewicht', parseInt(e.target.value) || 0);
                                 setTempValues({...tempValues, [`verkoop-${verkoop.id}-levendGewicht`]: undefined});
                               }}
-                              className="w-16 text-xs border rounded px-1 py-1"
+                              disabled={verkoop.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${!verkoop.levendGewicht ? 'border-red-300 bg-red-50' : ''} ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {verkoop.isManuallyEdited?.levendGewicht && (
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -1697,8 +1722,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               type="number"
                               value={verkoop.btwPercentage.replace('%', '')}
                               onChange={(e) => updateVerkoop(verkoop.id, 'btwPercentage', e.target.value ? `${e.target.value}%` : '')}
-                              className={`w-16 text-xs border rounded px-1 py-1 ${!verkoop.btwPercentage ? 'border-red-300 bg-red-50' : ''}`}
-                              placeholder="0"
+                               disabled={verkoop.status === 'Afgewerkt'} className={`w-16 text-xs border rounded px-1 py-1 ${!verkoop.btwPercentage ? 'border-red-300 bg-red-50' : ''}`}
                               min="0"
                               max="100"
                             />
@@ -1711,6 +1735,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <select
                             value={verkoop.afnemer}
                             onChange={(e) => updateVerkoop(verkoop.id, 'afnemer', e.target.value)}
+                            disabled={verkoop.status === 'Afgewerkt'}
                             className={`w-full text-xs border rounded px-1 py-1 ${!verkoop.afnemer ? 'border-red-300 bg-red-50' : ''}`}
                           >
                             <option value="">--</option>
@@ -1721,22 +1746,19 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="checkbox"
                             checked={verkoop.noodslacht}
-                            onChange={(e) => updateVerkoop(verkoop.id, 'noodslacht', e.target.checked)}
-                            className="w-4 h-4"
-                          />
+                            onChange={(e) => updateVerkoop(verkoop.id, 'noodslacht', e.target.checked)} disabled={verkoop.status === 'Afgewerkt'} className={`w-4 h-4 ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                         </td>
                         <td className="px-2 py-2 border-r text-center">
                           <input
                             type="checkbox"
                             checked={verkoop.afgekeurd}
-                            onChange={(e) => updateVerkoop(verkoop.id, 'afgekeurd', e.target.checked)}
-                            className="w-4 h-4"
-                          />
+                            onChange={(e) => updateVerkoop(verkoop.id, 'afgekeurd', e.target.checked)} disabled={verkoop.status === 'Afgewerkt'} className={`w-4 h-4 ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                         </td>
                         <td className="px-2 py-2 border-r">
                           <select
                             value={verkoop.verkoopswijze}
                             onChange={(e) => updateVerkoop(verkoop.id, 'verkoopswijze', e.target.value)}
+                            disabled={verkoop.status === 'Afgewerkt'}
                             className={`w-full text-xs border rounded px-1 py-1 ${!verkoop.verkoopswijze ? 'border-red-300 bg-red-50' : ''}`}
                           >
                             {verkoopswijzen.map(vw => <option key={vw} value={vw}>{vw}</option>)}
@@ -1746,16 +1768,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={verkoop.nota}
-                            onChange={(e) => updateVerkoop(verkoop.id, 'nota', e.target.value)}
-                            className="w-32 text-xs border rounded px-1 py-1"
-                            placeholder="Vrije tekst..."
-                          />
+                            onChange={(e) => updateVerkoop(verkoop.id, 'nota', e.target.value)} disabled={verkoop.status === 'Afgewerkt'} className={`w-32 text-xs border rounded px-1 py-1 ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                         </td>
                         <td className="px-2 py-2 border-r">
                           <select
                             value={verkoop.status}
                             onChange={(e) => updateStatus(verkoop.id, e.target.value as StatusType, 'verkoop')}
-                            className={`w-full text-xs border rounded px-1 py-1 ${getStatusColor(verkoop.status)}`}
                           >
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
@@ -1765,8 +1783,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <td className="px-2 py-2 text-center">
                           <button
                             onClick={() => requestDelete(verkoop.id, 'verkoop')}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
-                            title="Verwijder boeking"
+                            disabled={verkoop.status === 'Afgewerkt'}
+                            className={`text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1815,11 +1833,10 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                       {interneVerkopen.map((iv) => (
                         <tr key={iv.id} className="border-b hover:bg-gray-50">
                           <td className="px-2 py-2 border-r">
-                            <input
-                              type="text"
-                              value={iv.datum}
+                            <input type="date" value={iv.datum}
                               onChange={(e) => updateInterneVerkoop(iv.id, 'datum', e.target.value)}
-                              className="w-24 text-xs border rounded px-1 py-1"
+                              disabled={iv.status === 'Afgewerkt'}
+                              className={`w-24 text-xs border rounded px-1 py-1 ${iv.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                           </td>
                           <td className="px-2 py-2 border-r">
@@ -1838,7 +1855,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <select
                               value={iv.diercategorie}
                               onChange={(e) => updateInterneVerkoop(iv.id, 'diercategorie', e.target.value)}
-                              className="w-full text-xs border rounded px-1 py-1"
+                              disabled={iv.status === 'Afgewerkt'}
+                              className={`w-full text-xs border rounded px-1 py-1 ${iv.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             >
                               {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
@@ -1847,6 +1865,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <select
                               value={iv.bedrijfstakNaar}
                               onChange={(e) => updateInterneVerkoop(iv.id, 'bedrijfstakNaar', e.target.value)}
+                              disabled={iv.status === 'Afgewerkt'}
                               className={`w-full text-xs border rounded px-1 py-1 ${!iv.bedrijfstakNaar ? 'border-red-300 bg-red-50' : ''}`}
                             >
                               <option value="">--</option>
@@ -1875,7 +1894,8 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               type="text"
                               value={iv.waarde}
                               onChange={(e) => updateInterneVerkoop(iv.id, 'waarde', e.target.value)}
-                              className="w-16 text-xs border rounded px-1 py-1"
+                              disabled={iv.status === 'Afgewerkt'}
+                              className={`w-16 text-xs border rounded px-1 py-1 ${iv.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                           </td>
                           <td className="px-2 py-2 border-r">
@@ -1890,16 +1910,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             <input
                               type="text"
                               value={iv.nota}
-                              onChange={(e) => updateInterneVerkoop(iv.id, 'nota', e.target.value)}
-                              className="w-32 text-xs border rounded px-1 py-1"
-                              placeholder="Vrije tekst..."
-                            />
+                              onChange={(e) => updateInterneVerkoop(iv.id, 'nota', e.target.value)} disabled={iv.status === 'Afgewerkt'} className={`w-32 text-xs border rounded px-1 py-1 ${iv.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
                           </td>
                           <td className="px-2 py-2 border-r">
                             <select
                               value={iv.status}
                               onChange={(e) => updateStatus(iv.id, e.target.value as StatusType, 'interneVerkoop')}
-                              className={`w-full text-xs border rounded px-1 py-1 ${getStatusColor(iv.status)}`}
                             >
                               <option value="Ingeladen">Ingeladen</option>
                               <option value="Niet afgewerkt">Niet afgewerkt</option>
@@ -1909,7 +1925,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <td className="px-2 py-2 text-center">
                             <button
                               onClick={() => requestDelete(iv.id, 'interneVerkoop')}
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                              disabled={iv.status === 'Afgewerkt'}
                               title="Verwijder boeking"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1954,11 +1970,9 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                     {sterftes.map((sterfte) => (
                       <tr key={sterfte.id} className="border-b hover:bg-gray-50">
                         <td className="px-2 py-2 border-r">
-                          <input
-                            type="text"
-                            value={sterfte.datum}
+                          <input type="date" value={sterfte.datum}
                             onChange={(e) => updateSterfte(sterfte.id, 'datum', e.target.value)}
-                            className="w-24 text-xs border rounded px-1 py-1"
+                            className={`w-24 text-xs border rounded px-1 py-1 ${sterfte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1985,7 +1999,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <select
                             value={sterfte.diercategorie}
                             onChange={(e) => updateSterfte(sterfte.id, 'diercategorie', e.target.value)}
-                            className="w-full text-xs border rounded px-1 py-1"
+                            className={`w-full text-xs border rounded px-1 py-1 ${sterfte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           >
                             {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                           </select>
@@ -2003,7 +2017,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             type="text"
                             value={sterfte.nota}
                             onChange={(e) => updateSterfte(sterfte.id, 'nota', e.target.value)}
-                            className="w-32 text-xs border rounded px-1 py-1"
+                            className={`w-32 text-xs border rounded px-1 py-1 ${sterfte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             placeholder="Vrije tekst..."
                           />
                         </td>
@@ -2011,7 +2025,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <select
                             value={sterfte.status}
                             onChange={(e) => updateStatus(sterfte.id, e.target.value as StatusType, 'sterfte')}
-                            className={`w-full text-xs border rounded px-1 py-1 ${getStatusColor(sterfte.status)}`}
                           >
                             <option value="Ingeladen">Ingeladen</option>
                             <option value="Niet afgewerkt">Niet afgewerkt</option>
@@ -2021,7 +2034,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                         <td className="px-2 py-2 text-center">
                           <button
                             onClick={() => requestDelete(sterfte.id, 'sterfte')}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                            disabled={sterfte.status === 'Afgewerkt'}
                             title="Verwijder boeking"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -2041,14 +2054,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
           <button
             onClick={handleBack}
             disabled={currentStep === 1}
-            className="h-[34px] px-4 bg-white border border-gray-300 text-[#364153] rounded text-[14px] hover:bg-gray-50 disabled:opacity-50"
           >
             Vorige
           </button>
           <button
             onClick={handleNext}
             disabled={!canProceed()}
-            className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] disabled:bg-gray-400"
           >
             {currentStep < 6 ? 'Volgende' : 'Voltooien'}
           </button>
