@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { X, ChevronRight, Plus, Star, Calculator, Trash2 } from 'lucide-react';
+import { X, ChevronRight, Plus, Calculator, Trash2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBolt } from '@fortawesome/free-solid-svg-icons';
 import { StatusType, Boeking } from '../types/booking';
 import { ImpactWizard } from './ImpactWizard';
 import { analyzeImpact } from '../utils/impactAnalyse';
@@ -143,7 +145,7 @@ const generateMockDieren = (): Dier[] => {
       sanitelnummer: sanitel,
       naam: `${laatste4}-${jaar}`,
       categorie: diercategorieën[Math.floor(Math.random() * diercategorieën.length)],
-      geboortedatum: `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/03/2022`
+      geboortedatum: `2022-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`
     });
   }
   return result;
@@ -152,15 +154,23 @@ const generateMockDieren = (): Dier[] => {
 // Calculate age in months from birthdate
 const calculateAgeInMonths = (geboortedatum: string): string => {
   if (!geboortedatum) return '';
-  const parts = geboortedatum.split('/');
-  if (parts.length !== 3) return '';
-  
-  const birthDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+
+  // Support both YYYY-MM-DD and DD/MM/YYYY formats
+  let birthDate: Date;
+  if (geboortedatum.includes('-')) {
+    // YYYY-MM-DD format
+    birthDate = new Date(geboortedatum);
+  } else {
+    // DD/MM/YYYY format (legacy)
+    const parts = geboortedatum.split('/');
+    if (parts.length !== 3) return '';
+    birthDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+  }
+
   const today = new Date();
-  
-  const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+  const months = (today.getFullYear() - birthDate.getFullYear()) * 12 +
                  (today.getMonth() - birthDate.getMonth());
-  
+
   return `${months}`;
 };
 
@@ -173,9 +183,19 @@ const calculateSlaughterWeight = (levendGewicht: number, percentage: number): nu
 const generateUniqueDierNaam = (sanitelnummer: string, datum: string, existingNames: string[]): string => {
   if (!sanitelnummer || !datum) return '';
   const laatste4 = sanitelnummer.slice(-4);
-  const jaar = datum.split('/')[2];
+
+  // Support both YYYY-MM-DD and DD/MM/YYYY formats
+  let jaar: string;
+  if (datum.includes('-')) {
+    // YYYY-MM-DD format
+    jaar = datum.split('-')[0];
+  } else {
+    // DD/MM/YYYY format (legacy)
+    jaar = datum.split('/')[2];
+  }
+
   let baseName = `${laatste4}-${jaar}`;
-  
+
   // Check if name already exists, if so add a suffix
   let counter = 1;
   let uniqueName = baseName;
@@ -183,7 +203,7 @@ const generateUniqueDierNaam = (sanitelnummer: string, datum: string, existingNa
     uniqueName = `${baseName}-${counter}`;
     counter++;
   }
-  
+
   return uniqueName;
 };
 
@@ -194,14 +214,14 @@ const generateAankopen = (): Aankoop[] => {
   for (let i = 0; i < 10; i++) {
     const hasEmptyFields = Math.random() > 0.7;
     const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
-    const datum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`;
+    const datum = `2024-08-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const naam = generateUniqueDierNaam(sanitel, datum, existingNames);
     existingNames.push(naam);
     
     result.push({
       id: `a${i + 1}`,
       datum: datum,
-      geboortedatum: `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/03/2022`,
+      geboortedatum: `2022-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
       gewicht: Math.floor(Math.random() * 300) + 300,
       waarde: hasEmptyFields && Math.random() > 0.5 ? '' : String(Math.floor(Math.random() * 1000) + 800),
       btwPercentage: hasEmptyFields && Math.random() > 0.5 ? '' : '0%',
@@ -224,7 +244,7 @@ const generateGeboortes = (): Geboorte[] => {
   for (let i = 0; i < 8; i++) {
     const hasEmptyFields = Math.random() > 0.7;
     const sanitelKalf = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
-    const geboortedatum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`;
+    const geboortedatum = `2024-08-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const naamKalf = generateUniqueDierNaam(sanitelKalf, geboortedatum, existingNames);
     existingNames.push(naamKalf);
     
@@ -261,9 +281,9 @@ const generateVerkopen = (): Verkoop[] => {
     const hasEmptyFields = Math.random() > 0.7;
     const levendGewicht = Math.floor(Math.random() * 200) + 450;
     const slachtPercentage = Math.floor(Math.random() * 10) + 52;
-    const geboortedatum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/03/2022`;
+    const geboortedatum = `2022-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
-    const datum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`;
+    const datum = `2024-08-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const naam = generateUniqueDierNaam(sanitel, datum, existingNames);
     existingNames.push(naam);
     
@@ -297,10 +317,10 @@ const generateInterneVerkopen = (): InterneVerkoop[] => {
   const existingNames: string[] = [];
   
   for (let i = 0; i < 3; i++) {
-    const geboortedatum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/03/2022`;
+    const geboortedatum = `2022-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const gewicht = Math.floor(Math.random() * 200) + 400;
     const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
-    const datum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`;
+    const datum = `2024-08-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const naam = generateUniqueDierNaam(sanitel, datum, existingNames);
     existingNames.push(naam);
     
@@ -330,7 +350,7 @@ const generateSterftes = (): Sterfte[] => {
   for (let i = 0; i < 4; i++) {
     const geboortedatum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/03/2020`;
     const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
-    const datum = `${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}/08/2024`;
+    const datum = `2024-08-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
     const naam = generateUniqueDierNaam(sanitel, datum, existingNames);
     existingNames.push(naam);
     
@@ -1023,7 +1043,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-24 text-xs border rounded px-1 py-1 ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {aankoop.isManuallyEdited?.datum && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1040,8 +1060,9 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={aankoop.sanitelnummer}
-                            disabled
-                            className="w-32 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed font-mono"
+                            onChange={(e) => updateAankoop(aankoop.id, 'sanitelnummer', e.target.value)}
+                            disabled={aankoop.status === 'Afgewerkt'}
+                            className={`w-32 text-xs border rounded px-1 py-1 font-mono ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1061,7 +1082,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-full text-xs border rounded px-1 py-1 ${!aankoop.naam ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {aankoop.isManuallyEdited?.naam && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1080,7 +1101,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                             {aankoop.isManuallyEdited?.diercategorie && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1094,7 +1115,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               {rasTypes.map(ras => <option key={ras} value={ras}>{ras}</option>)}
                             </select>
                             {aankoop.isManuallyEdited?.rasType && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1112,7 +1133,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-16 text-xs border rounded px-1 py-1 ${!aankoop.gewicht ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {aankoop.isManuallyEdited?.gewicht && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1137,7 +1158,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
                             </button>
                             {aankoop.isManuallyEdited?.waarde && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1154,7 +1175,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               max="100"
                             />
                             {aankoop.isManuallyEdited?.btwPercentage && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1240,7 +1261,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-24 text-xs border rounded px-1 py-1 ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {geboorte.isManuallyEdited?.datum && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1248,8 +1269,9 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           <input
                             type="text"
                             value={geboorte.sanitelnummerKalf}
-                            disabled
-                            className="w-32 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed font-mono"
+                            onChange={(e) => updateGeboorte(geboorte.id, 'sanitelnummerKalf', e.target.value)}
+                            disabled={geboorte.status === 'Afgewerkt'}
+                            className={`w-32 text-xs border rounded px-1 py-1 font-mono ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           />
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1269,7 +1291,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-full text-xs border rounded px-1 py-1 ${!geboorte.naamKalf ? 'border-red-300 bg-red-50' : ''} ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {geboorte.isManuallyEdited?.naamKalf && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1288,7 +1310,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                             {geboorte.isManuallyEdited?.diercategorieKalf && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1307,7 +1329,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               {rasTypes.map(ras => <option key={ras} value={ras}>{ras}</option>)}
                             </select>
                             {geboorte.isManuallyEdited?.rasKalfType && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1325,7 +1347,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-16 text-xs border rounded px-1 py-1 ${!geboorte.gewicht ? 'border-red-300 bg-red-50' : ''} ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {geboorte.isManuallyEdited?.gewicht && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1351,7 +1373,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
                             </button>
                             {geboorte.isManuallyEdited?.waarde && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1366,7 +1388,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               max="100"
                             />
                             {geboorte.isManuallyEdited?.btwPercentage && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1498,7 +1520,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 ))}
                               </select>
                               {overgang.isManuallyEdited?.naam && (
-                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                               )}
                             </div>
                           </td>
@@ -1533,7 +1555,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                               </select>
                               {overgang.isManuallyEdited?.nieuweCategorie && (
-                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                               )}
                             </div>
                           </td>
@@ -1624,7 +1646,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-24 text-xs border rounded px-1 py-1 ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {verkoop.isManuallyEdited?.datum && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1644,7 +1666,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className="w-20 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                             />
                             {verkoop.isManuallyEdited?.naam && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1672,7 +1694,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className={`w-16 text-xs border rounded px-1 py-1 ${!verkoop.levendGewicht ? 'border-red-300 bg-red-50' : ''} ${verkoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
                             {verkoop.isManuallyEdited?.levendGewicht && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1712,7 +1734,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
                             </button>
                             {verkoop.isManuallyEdited?.waarde && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1727,7 +1749,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               max="100"
                             />
                             {verkoop.isManuallyEdited?.btwPercentage && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
@@ -1885,7 +1907,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                                 className="w-16 text-xs border rounded px-1 py-1"
                               />
                               {iv.isManuallyEdited?.gewicht && (
-                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                               )}
                             </div>
                           </td>
@@ -1991,7 +2013,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className="w-20 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
                             />
                             {sterfte.isManuallyEdited?.naam && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
                             )}
                           </div>
                         </td>
