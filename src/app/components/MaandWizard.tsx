@@ -1042,9 +1042,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               disabled={aankoop.status === 'Afgewerkt'}
                               className={`w-24 text-xs border rounded px-1 py-1 ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
-                            {aankoop.isManuallyEdited?.datum && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1081,9 +1078,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               disabled={aankoop.status === 'Afgewerkt'}
                               className={`w-full text-xs border rounded px-1 py-1 ${!aankoop.naam ? 'border-red-300 bg-red-50' : ''} ${aankoop.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
-                            {aankoop.isManuallyEdited?.naam && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1100,9 +1094,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <option value="">--</option>
                               {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
-                            {aankoop.isManuallyEdited?.diercategorie && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1114,9 +1105,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             >
                               {rasTypes.map(ras => <option key={ras} value={ras}>{ras}</option>)}
                             </select>
-                            {aankoop.isManuallyEdited?.rasType && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1157,9 +1145,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             >
                               <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
                             </button>
-                            {aankoop.isManuallyEdited?.waarde && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1174,9 +1159,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               min="0"
                               max="100"
                             />
-                            {aankoop.isManuallyEdited?.btwPercentage && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1260,9 +1242,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               disabled={geboorte.status === 'Afgewerkt'}
                               className={`w-24 text-xs border rounded px-1 py-1 ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
-                            {geboorte.isManuallyEdited?.datum && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1290,9 +1269,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               disabled={geboorte.status === 'Afgewerkt'}
                               className={`w-full text-xs border rounded px-1 py-1 ${!geboorte.naamKalf ? 'border-red-300 bg-red-50' : ''} ${geboorte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             />
-                            {geboorte.isManuallyEdited?.naamKalf && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1309,9 +1285,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <option value="">--</option>
                               {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
-                            {geboorte.isManuallyEdited?.diercategorieKalf && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1328,9 +1301,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               <option value="">--</option>
                               {rasTypes.map(ras => <option key={ras} value={ras}>{ras}</option>)}
                             </select>
-                            {geboorte.isManuallyEdited?.rasKalfType && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1372,9 +1342,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             >
                               <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
                             </button>
-                            {geboorte.isManuallyEdited?.waarde && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
@@ -1387,9 +1354,6 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               min="0"
                               max="100"
                             />
-                            {geboorte.isManuallyEdited?.btwPercentage && (
-                              <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
-                            )}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r text-center">
