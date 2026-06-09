@@ -113,6 +113,7 @@ interface Dier {
   sanitelnummer: string;
   naam: string;
   categorie: string;
+  rasType: string;
   geboortedatum: string;
 }
 
@@ -134,9 +135,7 @@ const highImpactFields = {
 
 // Generate mock dieren database
 const generateMockDieren = (): Dier[] => {
-  const namen = ['Bella', 'Luna', 'Rosa', 'Max', 'Boris', 'Rocky', 'Daisy', 'Molly'];
   const result: Dier[] = [];
-  
   for (let i = 0; i < 20; i++) {
     const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
     const laatste4 = sanitel.slice(-4);
@@ -145,7 +144,27 @@ const generateMockDieren = (): Dier[] => {
       sanitelnummer: sanitel,
       naam: `${laatste4}-${jaar}`,
       categorie: diercategorieën[Math.floor(Math.random() * diercategorieën.length)],
+      rasType: rasTypes[Math.floor(Math.random() * rasTypes.length)],
       geboortedatum: `2022-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`
+    });
+  }
+  return result;
+};
+
+// Moederdieren = vrouwelijke dieren aanwezig op het bedrijf (melkkoeien, zoogkoeien, jongvee)
+const moederDiercategorieën = ['Melkkoe', 'Zoogkoe', 'Jongvee', 'Vrouwelijk Jongvee Vlees'];
+const generateMoederdieren = (): Dier[] => {
+  const result: Dier[] = [];
+  for (let i = 0; i < 15; i++) {
+    const sanitel = `BE${Math.floor(Math.random() * 900000000) + 100000000}`;
+    const laatste4 = sanitel.slice(-4);
+    const jaar = String(2018 + Math.floor(Math.random() * 5));
+    result.push({
+      sanitelnummer: sanitel,
+      naam: `${laatste4}-${jaar}`,
+      categorie: moederDiercategorieën[Math.floor(Math.random() * moederDiercategorieën.length)],
+      rasType: rasTypes[Math.floor(Math.random() * rasTypes.length)],
+      geboortedatum: `${jaar}-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`
     });
   }
   return result;
@@ -414,6 +433,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
   
   // Mock dieren database
   const [beschikbareDieren] = useState<Dier[]>(() => generateMockDieren());
+  const [beschikbareMoederdieren] = useState<Dier[]>(() => generateMoederdieren());
   
   // Temporary values for fields (to prevent impact wizard showing too early)
   const [tempValues, setTempValues] = useState<Record<string, any>>({});
@@ -1377,12 +1397,51 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                             >
                               <img src={cowIcon} alt="Dier" className="w-4 h-4" />
                             </button>
-                            <input
-                              type="text"
-                              value={geboorte.naamMoeder}
-                              disabled
-                              className="w-24 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
-                            />
+                            {(() => {
+                              const isNew = geboorte.status === 'Niet afgewerkt';
+                              const isDisabled = !isNew || geboorte.status === 'Afgewerkt';
+                              if (isDisabled) {
+                                return (
+                                  <input
+                                    type="text"
+                                    value={geboorte.naamMoeder ? `${geboorte.naamMoeder} — ${geboorte.diercategorieMoeder}` : ''}
+                                    disabled
+                                    className="w-52 text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
+                                  />
+                                );
+                              }
+                              return (
+                                <select
+                                  value={geboorte.sanitelnummerMoeder}
+                                  onChange={(e) => {
+                                    const gekozen = beschikbareMoederdieren.find(d => d.sanitelnummer === e.target.value);
+                                    if (gekozen) {
+                                      setGeboortes(prev => prev.map(g => g.id === geboorte.id ? {
+                                        ...g,
+                                        sanitelnummerMoeder: gekozen.sanitelnummer,
+                                        naamMoeder: gekozen.naam,
+                                        diercategorieMoeder: gekozen.categorie
+                                      } : g));
+                                    } else {
+                                      setGeboortes(prev => prev.map(g => g.id === geboorte.id ? {
+                                        ...g,
+                                        sanitelnummerMoeder: '',
+                                        naamMoeder: '',
+                                        diercategorieMoeder: ''
+                                      } : g));
+                                    }
+                                  }}
+                                  className="w-52 text-xs border rounded px-1 py-1"
+                                >
+                                  <option value="">-- Selecteer moeder --</option>
+                                  {beschikbareMoederdieren.map(d => (
+                                    <option key={d.sanitelnummer} value={d.sanitelnummer}>
+                                      {d.naam} — {d.categorie} — {d.rasType}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            })()}
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
