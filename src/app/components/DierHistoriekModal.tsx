@@ -1,3 +1,4 @@
+import { useState, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
 
 interface Boeking {
@@ -26,16 +27,51 @@ interface DierHistoriekModalProps {
 }
 
 export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProps) {
+  const [sanitelnummer, setSanitelnummer] = useState(dierInfo.sanitelnummer);
+  const [naam, setNaam] = useState(dierInfo.naam);
+
+  // Drag state
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const dragging = useRef(false);
+  const startMouse = useRef({ x: 0, y: 0 });
+  const startPos = useRef({ x: 0, y: 0 });
+
+  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Only drag from header, not from buttons inside it
+    if ((e.target as HTMLElement).closest('button')) return;
+    dragging.current = true;
+    startMouse.current = { x: e.clientX, y: e.clientY };
+    startPos.current = { x: pos.x, y: pos.y };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragging.current) return;
+      setPos({
+        x: startPos.current.x + ev.clientX - startMouse.current.x,
+        y: startPos.current.y + ev.clientY - startMouse.current.y,
+      });
+    };
+    const onUp = () => {
+      dragging.current = false;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [pos]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-[#101828]">Dierhistoriek - {dierInfo.naam}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col pointer-events-auto"
+        style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+      >
+        {/* Header — drag handle */}
+        <div
+          className="border-b border-gray-200 px-6 py-4 flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
+          onMouseDown={onMouseDown}
+        >
+          <h2 className="text-xl font-semibold text-[#101828]">Dierhistoriek - {naam}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -47,12 +83,22 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
             <h3 className="text-lg font-semibold text-[#101828] mb-3">Dierinformatie</h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-gray-600">Sanitelnummer</p>
-                <p className="text-base font-mono text-[#101828]">{dierInfo.sanitelnummer}</p>
+                <p className="text-sm text-gray-600 mb-1">Sanitelnummer</p>
+                <input
+                  type="text"
+                  value={sanitelnummer}
+                  onChange={(e) => setSanitelnummer(e.target.value)}
+                  className="w-full text-sm font-mono text-[#101828] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Naam</p>
-                <p className="text-base text-[#101828]">{dierInfo.naam}</p>
+                <p className="text-sm text-gray-600 mb-1">Naam</p>
+                <input
+                  type="text"
+                  value={naam}
+                  onChange={(e) => setNaam(e.target.value)}
+                  className="w-full text-sm text-[#101828] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Ras</p>
@@ -76,14 +122,14 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
           {/* Boekinghistoriek */}
           <div>
             <h3 className="text-lg font-semibold text-[#101828] mb-3">Boekinghistoriek</h3>
-            <p className="text-sm text-gray-600 mb-3">Historiek van alle boekingen voor {dierInfo.naam}</p>
-            
+            <p className="text-sm text-gray-600 mb-3">Historiek van alle boekingen voor {naam}</p>
+
             <div className="border border-gray-200 rounded overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Datum</th>
-                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Handeling</th>
+                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Type</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Gewicht (kg)</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Leeftijd (maanden)</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Diercategorie</th>
