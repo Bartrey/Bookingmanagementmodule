@@ -109,6 +109,15 @@ export function IndividueelVee({ selectedSanitel }: { selectedSanitel?: string |
   const [showWizard, setShowWizard] = useState(false);
   const [selectedDierSanitel, setSelectedDierSanitel] = useState<string>('');
 
+  // Dierhistoriek modal state
+  const [showDierModal, setShowDierModal] = useState(false);
+  const [selectedDierInfo, setSelectedDierInfo] = useState<Dier | null>(null);
+
+  const handleOpenDierModal = (dier: Dier) => {
+    setSelectedDierInfo(dier);
+    setShowDierModal(true);
+  };
+
   const filteredDieren = dieren.filter((dier) => {
     if (naamFilter && !dier.naam.toLowerCase().includes(naamFilter.toLowerCase())) {
       return false;
@@ -276,7 +285,9 @@ export function IndividueelVee({ selectedSanitel }: { selectedSanitel?: string |
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <img src={cowIcon} alt="Dier" className="w-4 h-4" />
+                          <button onClick={() => handleOpenDierModal(dier)} className="hover:opacity-70" title="Bekijk dierhistoriek">
+                            <img src={cowIcon} alt="Dier" className="w-4 h-4" />
+                          </button>
                           <span className="text-[14px] leading-5 text-[#101828]">{dier.naam}</span>
                         </div>
                       </td>
@@ -403,6 +414,22 @@ export function IndividueelVee({ selectedSanitel }: { selectedSanitel?: string |
           </div>
         </div>
       </div>
+
+      {/* Dierhistoriek Modal */}
+      {showDierModal && selectedDierInfo && (
+        <DierHistoriekModal
+          dierInfo={{
+            sanitelnummer: selectedDierInfo.sanitelnummer,
+            naam: selectedDierInfo.naam,
+            ras: selectedDierInfo.ras,
+            geboortedatum: selectedDierInfo.geboortedatum,
+            huidigeCategorie: selectedDierInfo.huidigeCategorie,
+            moederdier: selectedDierInfo.moederdier,
+            boekingen: selectedDierInfo.boekingen
+          }}
+          onClose={() => setShowDierModal(false)}
+        />
+      )}
 
       {/* Wizard Modal */}
       {showWizard && (

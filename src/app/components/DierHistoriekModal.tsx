@@ -101,7 +101,7 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
                 />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Ras</p>
+                <p className="text-sm text-gray-600">Rastype</p>
                 <p className="text-base text-[#101828]">{dierInfo.ras}</p>
               </div>
               <div>
@@ -113,7 +113,7 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
                 <p className="text-base text-[#101828]">{dierInfo.huidigeCategorie}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Moederdier</p>
+                <p className="text-sm text-gray-600">Naam moeder</p>
                 <p className="text-base text-[#101828]">{dierInfo.moederdier}</p>
               </div>
             </div>
@@ -133,7 +133,7 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Gewicht (kg)</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Leeftijd (maanden)</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Diercategorie</th>
-                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Waarde</th>
+                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Waarde (€)</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
