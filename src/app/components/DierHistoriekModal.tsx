@@ -130,10 +130,11 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
                   <tr>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Datum</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Type</th>
-                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Gewicht (kg)</th>
-                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Leeftijd (maanden)</th>
-                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Diercategorie</th>
                     <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Waarde (€)</th>
+                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Gewicht (kg)</th>
+                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Diercategorie</th>
+                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Leeftijd (maanden)</th>
+                    <th className="px-3 py-2 text-left text-sm font-semibold text-[#4a5565]">Bestemming</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
@@ -141,10 +142,11 @@ export function DierHistoriekModal({ dierInfo, onClose }: DierHistoriekModalProp
                     <tr key={boeking.id} className="hover:bg-gray-50">
                       <td className="px-3 py-2 text-sm text-[#101828]">{boeking.datum}</td>
                       <td className="px-3 py-2 text-sm text-[#4a5565]">{boeking.handeling}</td>
-                      <td className="px-3 py-2 text-sm text-[#101828]">{boeking.gewicht}</td>
-                      <td className="px-3 py-2 text-sm text-[#101828]">{boeking.leeftijd.toFixed(2)}</td>
-                      <td className="px-3 py-2 text-sm text-[#4a5565]">{boeking.diercategorie}</td>
                       <td className="px-3 py-2 text-sm text-[#101828]">€{boeking.waarde}</td>
+                      <td className="px-3 py-2 text-sm text-[#101828]">{boeking.gewicht}</td>
+                      <td className="px-3 py-2 text-sm text-[#4a5565]">{boeking.diercategorie}</td>
+                      <td className="px-3 py-2 text-sm text-[#101828]">{boeking.leeftijd.toFixed(2)}</td>
+                      <td className="px-3 py-2 text-sm text-[#4a5565]">Melkkoeien</td>
                     </tr>
                   ))}
                 </tbody>
