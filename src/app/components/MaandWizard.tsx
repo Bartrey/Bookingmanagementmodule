@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ChevronRight, Plus, Calculator, Trash2 } from 'lucide-react';
+import { X, ChevronRight, Plus, Calculator, Trash2, Save, RotateCcw } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBolt } from '@fortawesome/free-solid-svg-icons';
 import { StatusType, Boeking } from '../types/booking';
@@ -7,7 +7,6 @@ import { ImpactWizard } from './ImpactWizard';
 import { analyzeImpact } from '../utils/impactAnalyse';
 import { toast } from 'sonner@2.0.3';
 import cowIcon from 'figma:asset/a66fdb0db9cbb3734b5cde6aa0a4baea6ced4f3e.png';
-import calculatorIcon from 'figma:asset/3264406a1015d1ce0fc45be44eb4da5a0867fd47.png';
 import { DierHistoriekModal } from './DierHistoriekModal';
 
 interface BaseItem {
@@ -1024,13 +1023,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-[#101828]">Aankopen ({aankopen.length} rijen)</h2>
-                <button
-                  onClick={() => handleNieuweBoeking('aankoop')}
-                  className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nieuwe boeking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast.success('Opgeslagen')} title="Bewaren" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#17a34a] hover:bg-[#15803d] text-white">
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toast.info('Ongedaan gemaakt')} title="Ongedaan maken" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#e8f0fe] hover:bg-[#c7d9fc] text-[#155dfc]">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleNieuweBoeking('aankoop')}
+                    className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nieuwe boeking
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border border-gray-200 text-xs">
@@ -1163,7 +1170,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               disabled={aankoop.status === 'Afgewerkt'}
                               title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
                             >
-                              <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
+                              <span className="text-xs font-bold text-gray-600 leading-none">%</span>
                             </button>
                           </div>
                         </td>
@@ -1223,13 +1230,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-[#101828]">Geboortes ({geboortes.length} rijen)</h2>
-                <button
-                  onClick={() => handleNieuweBoeking('geboorte')}
-                  className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nieuwe boeking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast.success('Opgeslagen')} title="Bewaren" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#17a34a] hover:bg-[#15803d] text-white">
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toast.info('Ongedaan gemaakt')} title="Ongedaan maken" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#e8f0fe] hover:bg-[#c7d9fc] text-[#155dfc]">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleNieuweBoeking('geboorte')}
+                    className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nieuwe boeking
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border border-gray-200 text-xs">
@@ -1361,7 +1376,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
                               disabled={geboorte.doodgeboren}
                             >
-                              <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
+                              <span className="text-xs font-bold text-gray-600 leading-none">%</span>
                             </button>
                           </div>
                         </td>
@@ -1483,13 +1498,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-[#101828]">Overgangen ({overgangen.length} rijen)</h2>
-                <button
-                  onClick={() => handleNieuweBoeking('overgang')}
-                  className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nieuwe boeking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast.success('Opgeslagen')} title="Bewaren" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#17a34a] hover:bg-[#15803d] text-white">
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toast.info('Ongedaan gemaakt')} title="Ongedaan maken" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#e8f0fe] hover:bg-[#c7d9fc] text-[#155dfc]">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleNieuweBoeking('overgang')}
+                    className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nieuwe boeking
+                  </button>
+                </div>
               </div>
               {overgangen.length === 0 ? (
                 <p className="text-gray-500 italic">Geen overgangen. Klik op "Nieuwe boeking" om een overgang toe te voegen.</p>
@@ -1630,13 +1653,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-[#101828]">Verkopen ({verkopen.length} rijen)</h2>
-                <button
-                  onClick={() => handleNieuweBoeking('verkoop')}
-                  className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nieuwe boeking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast.success('Opgeslagen')} title="Bewaren" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#17a34a] hover:bg-[#15803d] text-white">
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toast.info('Ongedaan gemaakt')} title="Ongedaan maken" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#e8f0fe] hover:bg-[#c7d9fc] text-[#155dfc]">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleNieuweBoeking('verkoop')}
+                    className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nieuwe boeking
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border border-gray-200 text-xs">
@@ -1764,7 +1795,7 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                               className="hover:bg-gray-100 rounded p-0.5"
                               title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
                             >
-                              <img src={calculatorIcon} alt="BTW calculator" className="w-4 h-4" />
+                              <span className="text-xs font-bold text-gray-600 leading-none">%</span>
                             </button>
                             {verkoop.isManuallyEdited?.waarde && (
                               <FontAwesomeIcon icon={faBolt} className="w-3 h-3 text-yellow-500" />
@@ -1857,13 +1888,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-[#101828]">Interne verkopen ({interneVerkopen.length} rijen)</h2>
-                <button
-                  onClick={() => handleNieuweBoeking('interneVerkoop')}
-                  className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nieuwe boeking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast.success('Opgeslagen')} title="Bewaren" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#17a34a] hover:bg-[#15803d] text-white">
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toast.info('Ongedaan gemaakt')} title="Ongedaan maken" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#e8f0fe] hover:bg-[#c7d9fc] text-[#155dfc]">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleNieuweBoeking('interneVerkoop')}
+                    className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nieuwe boeking
+                  </button>
+                </div>
               </div>
               {interneVerkopen.length === 0 ? (
                 <p className="text-gray-500 italic">Geen interne verkopen. Klik op "Nieuwe boeking" om een interne verkoop toe te voegen.</p>
@@ -2000,13 +2039,21 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-[#101828]">Sterftes ({sterftes.length} rijen)</h2>
-                <button
-                  onClick={() => handleNieuweBoeking('sterfte')}
-                  className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Nieuwe boeking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast.success('Opgeslagen')} title="Bewaren" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#17a34a] hover:bg-[#15803d] text-white">
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toast.info('Ongedaan gemaakt')} title="Ongedaan maken" className="w-[34px] h-[34px] flex items-center justify-center rounded bg-[#e8f0fe] hover:bg-[#c7d9fc] text-[#155dfc]">
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleNieuweBoeking('sterfte')}
+                    className="h-[34px] px-4 bg-[#155dfc] text-white rounded text-[14px] hover:bg-[#1348d6] flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nieuwe boeking
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border border-gray-200 text-xs">

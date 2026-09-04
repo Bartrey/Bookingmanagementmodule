@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Boeking, StatusType, HandelingType } from '../types/booking';
 import { toast } from 'sonner@2.0.3';
-import calculatorIcon from 'figma:asset/3264406a1015d1ce0fc45be44eb4da5a0867fd47.png';
 import cowIcon from 'figma:asset/a66fdb0db9cbb3734b5cde6aa0a4baea6ced4f3e.png';
 
 interface NieuweBoekingWizardProps {
@@ -373,7 +372,7 @@ export function NieuweBoekingWizard({
                         className="hover:bg-gray-100 rounded p-2"
                         title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
                       >
-                        <img src={calculatorIcon} alt="BTW calculator" className="w-5 h-5" />
+                        <span className="text-sm font-bold text-gray-600 leading-none">%</span>
                       </button>
                     </div>
                   </div>
@@ -706,7 +705,7 @@ export function NieuweBoekingWizard({
                         className="hover:bg-gray-100 rounded p-2"
                         title="BTW aftrekken automatisch, volgens het ingegeven %, van het ingegeven bedrag"
                       >
-                        <img src={calculatorIcon} alt="BTW calculator" className="w-5 h-5" />
+                        <span className="text-sm font-bold text-gray-600 leading-none">%</span>
                       </button>
                     </div>
                   </div>
