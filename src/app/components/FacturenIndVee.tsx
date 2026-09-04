@@ -38,9 +38,11 @@ export function FacturenIndVee({ onOpenWizardForMonth }: FacturenIndVeeProps) {
     return saved ? (saved as 'maand' | 'kwartaal') : null;
   });
   
-  // Huidige beschikbare datum (laatste dag van vorige maand)
-  const beschikbareTotDatum = new Date(2024, 8, 30); // 30 september 2024
-  const formattedDatum = `${beschikbareTotDatum.getDate().toString().padStart(2, '0')}/${(beschikbareTotDatum.getMonth() + 1).toString().padStart(2, '0')}/${beschikbareTotDatum.getFullYear()}`;
+  // Beschikbare diergegevens per beslagnummer
+  const beslagnummerData = [
+    { beslagnummer: '123456', laatsteDatum: '30/09/2024' },
+    { beslagnummer: '789012', laatsteDatum: '31/08/2024' },
+  ];
 
   const handleInladenDiergegevens = () => {
     // Check if user hasn't made a choice yet
@@ -116,9 +118,14 @@ export function FacturenIndVee({ onOpenWizardForMonth }: FacturenIndVeeProps) {
           <h2 className="text-xl font-semibold mb-4 text-[#101828]">Nieuwe diergegevens inladen</h2>
           
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
-            <p className="text-[16px] text-[#364153]">
-              Diergegevens tot datum: <span className="font-semibold">{formattedDatum}</span> zijn beschikbaar.
-            </p>
+            <div className="space-y-1">
+              {beslagnummerData.map(({ beslagnummer, laatsteDatum }) => (
+                <p key={beslagnummer} className="text-[16px] text-[#364153]">
+                  Diergegevens van beslag <span className="font-semibold">{beslagnummer}</span> tot{' '}
+                  <span className="font-semibold">{laatsteDatum}</span> zijn beschikbaar.
+                </p>
+              ))}
+            </div>
             
             <button
               onClick={handleInladenDiergegevens}
