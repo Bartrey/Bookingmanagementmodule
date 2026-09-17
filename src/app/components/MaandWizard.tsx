@@ -2098,13 +2098,12 @@ export function MaandWizard({ maand, onClose, onNavigateToIndividualAnimal }: Ma
                           </div>
                         </td>
                         <td className="px-2 py-2 border-r">
-                          <select
+                          <input
+                            type="text"
                             value={sterfte.diercategorie}
-                            onChange={(e) => updateSterfte(sterfte.id, 'diercategorie', e.target.value)}
-                            className={`w-full text-xs border rounded px-1 py-1 ${sterfte.status === 'Afgewerkt' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          >
-                            {diercategorieën.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                          </select>
+                            disabled
+                            className="w-full text-xs border rounded px-1 py-1 bg-gray-100 cursor-not-allowed"
+                          />
                         </td>
                         <td className="px-2 py-2 border-r">
                           <input
